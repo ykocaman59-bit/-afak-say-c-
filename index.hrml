@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Şafak Sayacı - Asker Yolu</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- html2canvas (PNG paylaşımı için) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col justify-between">
+
+    <!-- GİRİŞ EKRANI -->
+    <div id="setupScreen" class="flex-1 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-md border border-slate-700">
+            <h2 class="text-2xl font-bold text-center mb-2 text-emerald-400">🪖 Şafak Sayacı Kurulum</h2>
+            <p class="text-xs text-slate-400 text-center mb-6">Askerlik bilgilerini girerek sayacı başlat.</p>
+            
+            <form id="setupForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-slate-300">Asker Adı Soyadı *</label>
+                    <input type="text" id="soldierName" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500" placeholder="Örn: Yusuf Buğra Kocaman">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-slate-300">Askerlik Başlangıç Tarihi (Sülüs) *</label>
+                    <input type="date" id="startDate" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500">
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 rounded-lg transition duration-200 shadow-lg shadow-emerald-600/30">Şafak Saymaya Başla</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ANA SAYAC EKRANI -->
+    <div id="mainScreen" class="flex-1 flex flex-col items-center justify-between p-4 max-w-md mx-auto w-full hidden">
+        
+        <!-- Üst Bilgi -->
+        <div class="w-full text-center mt-2">
+            <h3 id="displayName" class="text-lg font-semibold text-slate-300 tracking-wider">Asker Adı</h3>
+            <span class="text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/30">6 Ay / 180 Günlük Vatan Borcu</span>
+        </div>
+
+        <!-- PAYLAŞILACAK ALAN (PNG ALANI) -->
+        <div id="captureArea" class="w-full bg-gradient-to-b from-slate-800 to-slate-900 border-2 border-emerald-500/40 rounded-3xl p-6 shadow-2xl my-4 text-center relative overflow-hidden">
+            <div class="absolute -right-10 -top-10 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl"></div>
+            
+            <span class="text-xs uppercase tracking-widest text-emerald-400 font-bold block mb-1">Şafak</span>
+            <div id="safakNumber" class="text-6xl font-extrabold text-white tracking-tight my-2 drop-shadow-md">--</div>
+            <div id="safakText" class="text-sm font-semibold text-emerald-300 mb-6 min-h-[40px] flex items-center justify-center px-2">Söz yükleniyor...</div>
+
+            <div class="border-t border-slate-700/60 pt-4 flex justify-between text-xs text-slate-400">
+                <div>Başlangıç: <span id="displayStart" class="text-slate-200 font-medium">-</span></div>
+                <div>Bitiş: <span id="displayEnd" class="text-slate-200 font-medium">-</span></div>
+            </div>
+        </div>
+
+        <!-- İşlem Butonları -->
+        <div class="w-full space-y-3 mb-2">
+            <button onclick="shareAsPNG()" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 transition duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 10 500 0-5.342M15 17.342a3 3 10 500 0 5.342"/></svg>
+                WhatsApp / Instagram İçin PNG Paylaş
+            </button>
+            <button onclick="resetData()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-red-400 text-xs py-2.5 rounded-lg transition duration-150 border border-slate-700">
+                Bilgileri Sıfırla / Yeniden Başlat
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center py-3 text-xs text-slate-500">
+        UCUZLUK DURAĞI / Şafak Sayacı © 2026
+    </footer>
+
+    <script>
+        // Şafak Sözleri Havuzu
+        const safakSozleri = {
+            1: "Şafak atarsa Doğan Güneş! Vatan borcu bitti, hayırlı olsun!",
+            2: "Plaka 02 Adıyaman! Az kaldı bitiyor.",
+            3: "Plaka 03 Afyonkarahisar! Şafak 3!",
+            4: "Plaka 04 Ağrı! Dağları deldik neredeyse.",
+            5: "Plaka 05 Amasya! Elma şekerine az kaldı.",
+            6: "Plaka 06 Ankara! Başkente selam olsun.",
+            7: "Plaka 07 Antalya! Tatil hayalleri başlıyor.",
+            10: "Plaka 10 Balıkesir! Çarşı izni tadında.",
+            20: "Plaka 20 Denizli! Horozun sesine az kaldı.",
+            34: "Plaka 34 İstanbul! Memlekete dönüşe az kaldı.",
+            59: "Plaka 59 Tekirdağ! Şafak düşmüş 59'a.",
+            61: "Plaka 61 Trabzon! Karadeniz havası yakın.",
+        };
+
+        function getSafakSozu(safak) {
+            if (safak === 1 || safak === 0) return "Şafak atarsa Doğan Güneş! Bitti bu askerlik!";
+            if (safakSozleri[safak]) return safakSozleri[safak];
+            if (safak > 180) return "Şafaklar atmaz oldu ama geçecek!";
+            return `Şafak ${safak}, atarsa kuralına göre batar bu güneş!`;
+        }
+
+        // Tarih Hesaplama ve UI Yönetimi
+        const TOTAL_DAYS = 180; // 6 ay standart hesap
+
+        function checkStorage() {
+            const savedData = localStorage.getItem('asker_safak_data');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                showMainScreen(data);
+            } else {
+                document.getElementById('setupScreen').classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('setupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('soldierName').value;
+            const startDate = document.getElementById('startDate').value;
+
+            const data = { name, startDate };
+            localStorage.setItem('asker_safak_data', JSON.stringify(data));
+            
+            document.getElementById('setupScreen').classList.add('hidden');
+            showMainScreen(data);
+        });
+
+        function showMainScreen(data) {
+            document.getElementById('mainScreen').classList.remove('hidden');
+            document.getElementById('displayName').innerText = data.name;
+            document.getElementById('displayStart').innerText = formatDate(data.startDate);
+
+            // Bitiş tarihini hesapla (Başlangıç + 180 gün)
+            const start = new Date(data.startDate);
+            const end = new Date(start);
+            end.setDate(start.getDate() + TOTAL_DAYS);
+            document.getElementById('displayEnd').innerText = formatDate(end.toISOString().split('T')[0]);
+
+            // Gün farkını hesapla (Geçmiş tarih desteği)
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            start.setHours(0,0,0,0);
+
+            const diffTime = today - start;
+            const passedDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            let remainingSafak = TOTAL_DAYS - passedDays;
+
+            if (remainingSafak < 0) remainingSafak = 0;
+
+            document.getElementById('safakNumber').innerText = remainingSafak;
+            document.getElementById('safakText').innerText = getSafakSozu(remainingSafak);
+        }
+
+        function formatDate(dateStr) {
+            const parts = dateStr.split('-');
+            return `${parts[2]}.${parts[1]}.${parts[0]}`;
+        }
+
+        function resetData() {
+            if (confirm("Tüm bilgileri sıfırlamak istediğine emin misin?")) {
+                localStorage.removeItem('asker_safak_data');
+                location.reload();
+            }
+        }
+
+        // html2canvas ile PNG Olarak İndirme / Paylaşma
+        function shareAsPNG() {
+            const captureElement = document.getElementById('captureArea');
+            html2canvas(captureElement, { scale: 2, backgroundColor: null }).then(canvas => {
+                const image = canvas.toDataURL("image/png");
+                
+                // Mobil cihazlar için paylaşım veya indirme tetikleme
+                const link = document.createElement('a');
+                link.href = image;
+                link.download = `safak-sayaci-${document.getElementById('safakNumber').innerText}.png`;
+                link.click();
+            });
+        }
+
+        // Sayfa yüklendiğinde kontrol et
+        window.onload = checkStorage;
+    </script>
+</body>
+-</html>
