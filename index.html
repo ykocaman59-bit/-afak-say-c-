@@ -50,7 +50,7 @@
             
             <span class="text-xs uppercase tracking-widest text-emerald-400 font-bold block mb-1">Şafak</span>
             <div id="safakNumber" class="text-6xl font-extrabold text-white tracking-tight my-2 drop-shadow-md">--</div>
-            <div id="safakText" class="text-sm font-semibold text-emerald-300 mb-6 min-h-[40px] flex items-center justify-center px-2">Söz yükleniyor...</div>
+            <div id="safakText" class="text-sm font-semibold text-emerald-300 mb-6 min-h-[50px] flex items-center justify-center px-2">Söz yükleniyor...</div>
 
             <div class="border-t border-slate-700/60 pt-4 flex justify-between text-xs text-slate-400">
                 <div>Başlangıç: <span id="displayStart" class="text-slate-200 font-medium">-</span></div>
@@ -76,31 +76,100 @@
     </footer>
 
     <script>
-        // Şafak Sözleri Havuzu
-        const safakSozleri = {
-            1: "Şafak atarsa Doğan Güneş! Vatan borcu bitti, hayırlı olsun!",
-            2: "Plaka 02 Adıyaman! Az kaldı bitiyor.",
-            3: "Plaka 03 Afyonkarahisar! Şafak 3!",
-            4: "Plaka 04 Ağrı! Dağları deldik neredeyse.",
-            5: "Plaka 05 Amasya! Elma şekerine az kaldı.",
-            6: "Plaka 06 Ankara! Başkente selam olsun.",
-            7: "Plaka 07 Antalya! Tatil hayalleri başlıyor.",
-            10: "Plaka 10 Balıkesir! Çarşı izni tadında.",
-            20: "Plaka 20 Denizli! Horozun sesine az kaldı.",
-            34: "Plaka 34 İstanbul! Memlekete dönüşe az kaldı.",
-            59: "Plaka 59 Tekirdağ! Şafak düşmüş 59'a.",
-            61: "Plaka 61 Trabzon! Karadeniz havası yakın.",
+        // Her güne (0-180 arası) özel şafak sözleri ve plaka uyarlamaları
+        const ozelSozler = {
+            1: "Şafak atarsa Doğan Güneş! Bitti bu askerlik, vatan sağ olsun!",
+            2: "Plaka 02 Adıyaman, az kaldı bitiyor duman duman.",
+            3: "Plaka 03 Afyonkarahisar, şafak 3 bitiyor bu intizar.",
+            4: "Plaka 04 Ağrı, dağları deldik dağları!",
+            5: "Plaka 05 Amasya, elma şekerinden biraz daha tatlı bitiyor.",
+            6: "Plaka 06 Ankara, başkente selam yola devam.",
+            7: "Plaka 07 Antalya, tatil hayalleri gerçek oluyor.",
+            8: "Plaka 08 Artvin, yeşiline doyum olmaz ama bitiyor.",
+            9: "Plaka 09 Aydın, şafak aydınlanıyor.",
+            10: "Plaka 10 Balıkesir, çarşı izni tadında son günler.",
+            11: "Plaka 11 Bilecik, az kaldı memlekete.",
+            12: "Plaka 12 Bingöl, dağlar ardında sevdiklerimiz.",
+            13: "Plaka 13 Bitlis, bitti artık bu iş.",
+            14: "Plaka 14 Bolu, dağları aşmaya az kaldı.",
+            15: "Plaka 15 Burdur, şafak saymaktan yoruldu yurdum.",
+            16: "Plaka 16 Bursa, yeşil bursa yeşil vatan.",
+            17: "Plaka 17 Çanakkale geçilmez sandılar ama biz geçtik!",
+            18: "Plaka 18 Çankırı, az kaldı bitiyor bu asr-ı.",
+            19: "Plaka 19 Çorum, leblebi gibi sayıyoruz günleri.",
+            20: "Plaka 20 Denizli, horozun sesine az kaldı.",
+            21: "Plaka 21 Diyarbakır, sıcağıyla, anısıyla bitti.",
+            22: "Plaka 22 Edirne, sınırda bitiyor bu macera.",
+            23: "Plaka 23 Elazığ, gardaşlığa selam.",
+            24: "Plaka 24 Erzincan, tulum peyniri tadında.",
+            25: "Plaka 25 Erzurum, dadaşların diyarı.",
+            26: "Plaka 26 Eskişehir, lüle taşı gibi parlak günler.",
+            27: "Plaka 27 Gaziantep, fıstık gibi bitiyor.",
+            28: "Plaka 28 Giresun, fındık bahçeleri gözümde tütüyor.",
+            29: "Plaka 29 Gümüşhane, az kaldı bu iş biter.",
+            30: "Plaka 30 Hakkari, dağlar ardı vatan.",
+            31: "Plaka 31 Hatay, künefe tadında bitiş.",
+            32: "Plaka 32 Isparta, gül kokulu şafaklar.",
+            33: "Plaka 33 Mersin, sahillere az kaldı.",
+            34: "Plaka 34 İstanbul, güzel İstanbul'a dönüşe çok az kaldı!",
+            35: "Plaka 35 İzmir, dağlarında çiçekler açar.",
+            36: "Plaka 36 Kars, kışı bitti yazına kavuştuk.",
+            37: "Plaka 37 Kastamonu, karadeniz dalgaları.",
+            38: "Plaka 38 Kayseri, mantı tadında şafaklar.",
+            39: "Plaka 39 Kırklareli, bitti buçuğu.",
+            40: "Plaka 40 Kırşehir, neşet abinin diyarı.",
+            41: "Plaka 41 Kocaeli, sanayi dumanı bitti.",
+            42: "Plaka 42 Konya, etliekmek hayalleri.",
+            43: "Plaka 43 Kütahya, çini gibi işledik bugünü.",
+            44: "Plaka 44 Malatya, kayısı tatlılığı.",
+            45: "Plaka 45 Manisa, mesir macunu şifası.",
+            46: "Plaka 46 Kahramanmaraş, dondurma gibi eriyor şafak.",
+            47: "Plaka 47 Mardin, taş evlerin gölgesinde bitti.",
+            48: "Plaka 48 Muğla, deniz kokusu geldi.",
+            49: "Plaka 49 Muş, yollar bizi bekler.",
+            50: "Plaka 50 Nevşehir, peri bacaları şahit.",
+            51: "Plaka 51 Niğde, az kaldı kavuşmaya.",
+            52: "Plaka 52 Ordu, fındık diyarı.",
+            53: "Plaka 53 Rize, çayını içmeye az kaldı.",
+            54: "Plaka 54 Sakarya, nehirler gibi akıyor zaman.",
+            55: "Plaka 55 Samsun, bandırma vapuru ruhu.",
+            56: "Plaka 56 Siirt, battaniyesi sıcaklığı.",
+            57: "Plaka 57 Sinop, karadeniz'in incisi.",
+            58: "Plaka 58 Sivas, yiğidolar diyarı.",
+            59: "Plaka 59 Tekirdağ, köftesi mis gibi memleket!",
+            60: "Plaka 60 Tokat, az kaldı bitiyor.",
+            61: "Plaka 61 Trabzon, horon tepme vakti yakın!",
+            62: "Plaka 62 Tunceli, doğanın kalbinde bitti.",
+            63: "Plaka 63 Şanlıurfa, isot tadında sert ama bitti.",
+            64: "Plaka 64 Uşak, halı gibi serildi yollar.",
+            65: "Plaka 65 Van, göl kenarı hayalleri.",
+            66: "Plaka 66 Yozgat, celal bayar diyarı.",
+            67: "Plaka 67 Zonguldak, maden ocaklarından güneşli günlere.",
+            68: "Plaka 68 Aksaray, somuncu baba.",
+            69: "Plaka 69 Bayburt, küçük ama bitiyor.",
+            70: "Plaka 70 Karaman, türkçe'nin başkenti.",
+            71: "Plaka 71 Kırıkkale, mühimmat bitti.",
+            72: "Plaka 72 Batman, karanlık günlerin sonu.",
+            73: "Plaka 73 Şırnak, dağlar arkada kaldı.",
+            74: "Plaka 74 Bartın, amasra sahilleri.",
+            75: "Plaka 75 Ardahan, serhat şehri.",
+            76: "Plaka 76 Iğdır, ağrı dağı etekleri.",
+            77: "Plaka 77 Yalova, kaplıca günleri bitti.",
+            78: "Plaka 78 Karabük, demir çelik gibi sağlam bitti.",
+            79: "Plaka 79 Kilis, sınır ötesi huzur.",
+            80: "Plaka 80 Osmaniye, çukurova güneşine az kaldı.",
+            81: "Plaka 81 Düzce, son 81 il, bitiyor bu çile!"
         };
 
         function getSafakSozu(safak) {
-            if (safak === 1 || safak === 0) return "Şafak atarsa Doğan Güneş! Bitti bu askerlik!";
-            if (safakSozleri[safak]) return safakSozleri[safak];
-            if (safak > 180) return "Şafaklar atmaz oldu ama geçecek!";
-            return `Şafak ${safak}, atarsa kuralına göre batar bu güneş!`;
+            if (safak <= 0) return "Şafak atarsa Doğan Güneş! Vatan borcu bitti, hayırlı olsun!";
+            if (ozelSozler[safak]) return ozelSozler[safak];
+            if (safak > 150) return `Şafak ${safak}, şafaklar atmaz oldu ama unvanımız asker!`;
+            if (safak > 100) return `Şafak ${safak}, dağlar taşlar bizimdir, az kaldı sık dişini!`;
+            return `Şafak ${safak}, saydırıyor günler, az kaldı tezkereye!`;
         }
 
-        // Tarih Hesaplama ve UI Yönetimi
-        const TOTAL_DAYS = 180; // 6 ay standart hesap
+        const TOTAL_DAYS = 180;
 
         function checkStorage() {
             const savedData = localStorage.getItem('asker_safak_data');
@@ -129,13 +198,11 @@
             document.getElementById('displayName').innerText = data.name;
             document.getElementById('displayStart').innerText = formatDate(data.startDate);
 
-            // Bitiş tarihini hesapla (Başlangıç + 180 gün)
             const start = new Date(data.startDate);
             const end = new Date(start);
             end.setDate(start.getDate() + TOTAL_DAYS);
             document.getElementById('displayEnd').innerText = formatDate(end.toISOString().split('T')[0]);
 
-            // Gün farkını hesapla (Geçmiş tarih desteği)
             const today = new Date();
             today.setHours(0,0,0,0);
             start.setHours(0,0,0,0);
@@ -162,22 +229,18 @@
             }
         }
 
-        // html2canvas ile PNG Olarak İndirme / Paylaşma
         function shareAsPNG() {
             const captureElement = document.getElementById('captureArea');
             html2canvas(captureElement, { scale: 2, backgroundColor: null }).then(canvas => {
                 const image = canvas.toDataURL("image/png");
-                
-                // Mobil cihazlar için paylaşım veya indirme tetikleme
                 const link = document.createElement('a');
                 link.href = image;
-                link.download = `safak-sayaci-${document.getElementById('safakNumber').innerText}.png`;
+                link.download = `safak-${document.getElementById('safakNumber').innerText}.png`;
                 link.click();
             });
         }
 
-        // Sayfa yüklendiğinde kontrol et
         window.onload = checkStorage;
     </script>
 </body>
--</html>
+</html>
